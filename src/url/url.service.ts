@@ -36,7 +36,7 @@ export class UrlService {
   }
 
   async getOriginal(miniUrl: string) {
-    const url = process.env.API_URL + miniUrl;
+    const url = process.env.BASE_URL + miniUrl;
     const obj = await this.urlRepo.findOneBy({ after: url });
     // 없으면 throw NotFound
     if (obj === null) throw new NotFoundException('등록되지 않은 url입니다.');
