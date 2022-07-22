@@ -17,6 +17,7 @@ import { ConfigService } from '@nestjs/config';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
+      url: process.env.DATABASE_URL,
       host: process.env.POSTGRES_HOST || process.env.DB_HOST,
       port: +process.env.POSTGRES_PORT || +process.env.DB_PORT,
       username: process.env.POSTGRES_USERNAME || process.env.DB_ID,
@@ -24,6 +25,7 @@ import { ConfigService } from '@nestjs/config';
       database: process.env.POSTGRES_DATABASE || process.env.DB_NAME,
       entities: [Url, Users],
       synchronize: true,
+      ssl: { rejectUnauthorized: false },
     }),
     JwtModule.registerAsync({
       useFactory: () => {
