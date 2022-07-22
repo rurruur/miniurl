@@ -23,7 +23,7 @@ export class UrlService {
     const base =
       'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     const converted: number[] = this.convertBase(id);
-    let shortened = process.env.API_URL;
+    let shortened = process.env.URL_BASE;
     for (const i of converted) {
       shortened += base[i];
     }
