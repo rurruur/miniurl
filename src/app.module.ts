@@ -18,7 +18,7 @@ import { ConfigService } from '@nestjs/config';
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.POSTGRES_HOST || process.env.DB_HOST,
-      port: +process.env.PORT || +process.env.DB_PORT,
+      port: +process.env.POSTGRES_PORT || +process.env.DB_PORT,
       username: process.env.POSTGRES_USERNAME || process.env.DB_ID,
       password: process.env.POSTGRES_PASSWORD || process.env.DB_PASS,
       database: process.env.POSTGRES_DATABASE || process.env.DB_NAME,
