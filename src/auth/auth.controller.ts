@@ -12,6 +12,7 @@ export class AuthController {
 
   @Get('oauth/callback')
   async getJwtToken(@Query('code') code: string) {
+    // 로그인 실패는..?
     const accessToken = await this.authService.getAccessToken(code);
     const user: UserDto = await this.usersService.getUserInfo(accessToken);
     const createdUser = await this.usersService.save(user);

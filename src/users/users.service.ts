@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/entity/users.entity';
 import { Repository } from 'typeorm';
 import { UserDto } from '../dto/user.interface';
+import fetch from 'node-fetch';
 
 @Injectable()
 export class UsersService {
@@ -21,8 +22,6 @@ export class UsersService {
   }
 
   async getUserInfo(accessToken: string) {
-    // Authorization: Bearer YOUR_ACCESS_TOKEN
-    // https://api.intra.42.fr/v2/me
     const me = await (
       await fetch(`https://api.intra.42.fr/v2/me`, {
         method: 'GET',
