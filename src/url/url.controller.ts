@@ -24,13 +24,13 @@ export class UrlController {
 
   @Post()
   async shorten(@Body('url') url: string) {
-    const saved = await this.urlService.save({ pre: url, after: '' });
+    this.urlService.validateUrl(url);
+    const saved = await this.urlService.save(url);
     return saved;
   }
 
   @Delete(':id')
   delete(@Param('id', ParseIntPipe) id: number) {
-    console.log('hi');
     this.urlService.deleteById(id);
   }
 }
