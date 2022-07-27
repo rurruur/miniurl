@@ -1,14 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { createHash } from 'crypto';
 import { Url } from 'src/entity/url.entity';
 import { Repository } from 'typeorm';
-import { UrlDto } from '../dto/url.interface';
 
 @Injectable()
 export class UrlService {
   constructor(@InjectRepository(Url) private urlRepo: Repository<Url>) {}
 
-  convertBase(id: number): number[] {
+  convertBase64(id: number): string {
+    const base =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-';
     const digits: number[] = [];
     let remain;
     while (id > 0) {
@@ -16,18 +22,27 @@ export class UrlService {
       digits.unshift(remain);
       id = Math.floor(id / 62);
     }
-    return digits;
-  }
-
-  shorten(id: number): string {
-    const base =
-      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const converted: number[] = this.convertBase(id);
-    let shortened = process.env.URL_BASE;
-    for (const i of converted) {
+    let shortened = '';
+    for (const i of digits) {
       shortened += base[i];
     }
     return shortened;
+  }
+
+  shorten(url: string): string {
+    const hash = createHash('sha512').update(url).digest('base64url');
+    let asciiSum = 0;
+    for (const char of hash) {
+      asciiSum += char.charCodeAt(0);
+    }
+    const shortened = process.env.API_URL + this.convertBase64(asciiSum);
+    return shortened;
+  }
+
+  validateUrl(url: string) {
+    // http~로 시작해야 리다이렉트 가능
+    if (url.indexOf('https://') !== 0 && url.indexOf('http://') !== 0)
+      throw new BadRequestException('올바른 형식의 주소가 아닙니다.');
   }
 
   async findAll() {
@@ -36,23 +51,22 @@ export class UrlService {
   }
 
   async getOriginal(miniUrl: string) {
-    const url = process.env.URL_BASE + miniUrl;
+    const url = process.env.API_URL + miniUrl;
     const obj = await this.urlRepo.findOneBy({ after: url });
     // 없으면 throw NotFound
     if (obj === null) throw new NotFoundException('등록되지 않은 url입니다.');
     return obj.pre;
   }
 
-  async save(urlObj: UrlDto) {
-    const found = await this.urlRepo.findOneBy({ pre: urlObj.pre });
-    if (found) return found;
-    const created = await this.urlRepo.create(urlObj);
-    await this.urlRepo.save(created);
-    const shortened = this.shorten(created.id);
-    created.after = shortened;
-    const result = await this.urlRepo.save(created);
-    console.log(result);
-    return created;
+  async save(originalUrl: string) {
+    const found = await this.urlRepo.findOneBy({ pre: originalUrl });
+    if (found) return found.after;
+    const result = this.shorten(originalUrl);
+    await this.urlRepo.save({
+      pre: originalUrl,
+      after: result,
+    });
+    return result;
   }
 
   async deleteById(id: number) {
