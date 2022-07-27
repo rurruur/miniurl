@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Redirect, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AppService } from './app.service';
 import { UrlService } from './url/url.service';
@@ -13,7 +13,6 @@ export class AppController {
   @Get()
   hello() {
     return this.appService.getHello();
-    // return process.env.API_URL;
   }
 
   @Get('login')
@@ -29,8 +28,9 @@ export class AppController {
   }
 
   @Get(':miniUrl')
-  redirect(@Param('miniUrl') miniUrl: string) {
-    const original = this.urlService.getOriginal(miniUrl);
-    return original;
+  @Redirect()
+  async redirect(@Param('miniUrl') miniUrl: string) {
+    const original = await this.urlService.getOriginal(miniUrl);
+    return { url: original };
   }
 }
