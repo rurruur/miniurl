@@ -12,6 +12,14 @@ import { Repository } from 'typeorm';
 export class UrlService {
   constructor(@InjectRepository(Url) private urlRepo: Repository<Url>) {}
 
+  async checkUrlExists(url: string): Promise<boolean> {
+    const found = await this.urlRepo.findOneBy({
+      after: process.env.API_URL + url,
+    });
+    if (found) return true;
+    else return false;
+  }
+
   convertBase64(id: number): string {
     const base =
       'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-';
@@ -29,13 +37,16 @@ export class UrlService {
     return shortened;
   }
 
-  shorten(url: string): string {
+  async shorten(url: string): Promise<string> {
     const hash = createHash('sha512').update(url).digest('base64url');
     let asciiSum = 0;
     for (const char of hash) {
       asciiSum += char.charCodeAt(0);
     }
-    const shortened = process.env.API_URL + this.convertBase64(asciiSum);
+    let shortened = process.env.API_URL + this.convertBase64(asciiSum);
+    while (await this.checkUrlExists(shortened)) {
+      shortened = process.env.API_URL + this.convertBase64(++asciiSum);
+    }
     return shortened;
   }
 
@@ -61,7 +72,7 @@ export class UrlService {
   async save(originalUrl: string) {
     const found = await this.urlRepo.findOneBy({ pre: originalUrl });
     if (found) return found.after;
-    const result = this.shorten(originalUrl);
+    const result = await this.shorten(originalUrl);
     await this.urlRepo.save({
       pre: originalUrl,
       after: result,
