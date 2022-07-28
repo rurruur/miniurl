@@ -16,12 +16,13 @@
 - `POST miniurl2.herokuapp.com/url`
 	```json
 	{
-		"url": "asdf"
+		"url": "https://github.com"
 	}
 	```
 	- body에 줄이고 싶은 url 추가해서 POST 요청 보내면 짧아진 url 리턴
+	- http로 시작하는 형식만 가능
 
-- shortened url 주소창에 입력하면 원본 주소 리턴
+- shortened url 주소창에 입력하면 원본 주소로 리다이렉트
 
 ### user 서비스
 `GET miniurl2.herokuapp.com/users/all`
