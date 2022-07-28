@@ -51,6 +51,9 @@ export class UrlService {
   }
 
   validateUrl(url: string) {
+    if (url === undefined) {
+      throw new BadRequestException('주소가 입력되지 않았습니다.');
+    }
     // http~로 시작해야 리다이렉트 가능
     if (url.indexOf('https://') !== 0 && url.indexOf('http://') !== 0)
       throw new BadRequestException('올바른 형식의 주소가 아닙니다.');
